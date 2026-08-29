@@ -47,6 +47,7 @@ export const MODELS = {
   free: "pollinations-flux-free",
   muse: "openrouter/meta/muse-image",
   krea: "openrouter/krea/krea-2-medium-turbo",
+  qwen: "openrouter/qwen/qwen-image-3",
   gpt5mini: "openrouter/openai/gpt-5-image-mini",
   gpt5: "openrouter/openai/gpt-5-image",
   gpt54: "openrouter/openai/gpt-5.4-image-2",
@@ -79,6 +80,12 @@ export const MODEL_OPTIONS: { value: ModelKey; label: string; description: strin
     label: "Krea 2 Medium Turbo $0.015",
     description: "Krea rápido, diseño gráfico, 1 ref imagen.",
     costPerImage: 0.015,
+  },
+  {
+    value: "qwen",
+    label: "Qwen Image 3 $0.03",
+    description: "Qwen, texto preciso 10px, 4 refs, hasta 6 imgs.",
+    costPerImage: 0.03,
   },
   {
     value: "gpt5mini",

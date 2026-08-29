@@ -50,7 +50,7 @@ export async function generateImage(
     const key = process.env.OPENROUTER_API_KEY;
     if (!key) throw new Error("Falta OPENROUTER_API_KEY en el servidor.");
     const openRouterModel = params.model.replace("openrouter/", "");
-    if (openRouterModel === "meta/muse-image" || openRouterModel === "krea/krea-2-medium-turbo") {
+    if (["meta/muse-image", "krea/krea-2-medium-turbo", "qwen/qwen-image-3"].includes(openRouterModel)) {
       const dims = ASPECT_DIMS[params.aspectRatio] ?? ASPECT_DIMS["1:1"];
       const size = `${dims.w}x${dims.h}`;
       const images: string[] = [];
