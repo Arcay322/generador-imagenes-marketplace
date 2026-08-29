@@ -62,8 +62,8 @@ export const MODEL_OPTIONS: { value: ModelKey; label: string; description: strin
   },
   {
     value: "muse",
-    label: "Muse Image ⭐ $0.01 (OpenRouter)",
-    description: "Más barato que Gemini, calidad pro (~US$0.01/imagen). Recomendado.",
+    label: "Meta Muse Image ⭐ $0.01 (OpenRouter)",
+    description: "Meta agentic, razonamiento antes de renderizar (~US$0.01/imagen). Recomendado.",
     costPerImage: 0.01,
   },
   {
