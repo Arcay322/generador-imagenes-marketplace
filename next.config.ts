@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin("./i18n.ts");
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
+  serverExternalPackages: ["firebase-admin"],
   async headers() {
     return [
       {
