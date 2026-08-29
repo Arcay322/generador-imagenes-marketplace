@@ -47,3 +47,7 @@ CLAUDE.md
 AGENTS.md
 skills-lock.json
 dw
+
+# firebase service account - NEVER commit
+service-account.json
+*-firebase-adminsdk-*.json
