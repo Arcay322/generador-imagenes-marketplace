@@ -8,13 +8,19 @@ export function CreditsBadge() {
   const [credits, setCredits] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!user) { setCredits(null); return; }
+    if (!user) return;
+    let cancelled = false;
     user.getIdToken().then((t) =>
       fetch("/api/credits", { headers: { Authorization: `Bearer ${t}` } })
         .then((r) => r.json())
-        .then((d) => setCredits(d.credits ?? 0))
+        .then((d) => { if (!cancelled) setCredits(d.credits ?? 0); })
         .catch(() => {})
     );
+    return () => { cancelled = true; };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) setCredits(null);
   }, [user]);
 
   if (!user || credits === null) return null;

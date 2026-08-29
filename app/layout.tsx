@@ -20,6 +20,8 @@ export const metadata: Metadata = {
     "Genera fotos de producto profesionales para Mercado Libre, Amazon y Etsy con IA. Portada, detalle, escala y grid con tu logo. Multi-nicho y multi-idioma.",
 };
 
+import { AuthProvider } from "./components/AuthProvider";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -27,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#07090f] text-zinc-100 font-sans selection:bg-indigo-500 selection:text-white">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

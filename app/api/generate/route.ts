@@ -34,16 +34,23 @@ interface GenerateBody {
   customInstructions?: string;
 }
 
-function checkPassword(request: NextRequest): { ok: true } | { ok: false; status: number; error: string } {
+async function checkAuth(request: NextRequest): Promise<{ ok: true; uid: string } | { ok: false; status: number; error: string }> {
+  const bearer = request.headers.get("authorization")?.replace("Bearer ", "");
+  if (bearer) {
+    try {
+      const { verifyIdToken } = await import("@/lib/firebase-admin");
+      const decoded = await verifyIdToken(bearer);
+      return { ok: true, uid: decoded.uid };
+    } catch {
+      return { ok: false, status: 401, error: "Sesión inválida, inicia sesión de nuevo." };
+    }
+  }
   const expected = process.env.APP_PASSWORD;
-  if (!expected) {
-    return { ok: false, status: 500, error: "APP_PASSWORD no configurado en el servidor." };
+  if (expected) {
+    const auth = request.headers.get("x-app-password");
+    if (auth && auth === expected) return { ok: true, uid: "legacy" };
   }
-  const auth = request.headers.get("x-app-password");
-  if (!auth || auth !== expected) {
-    return { ok: false, status: 401, error: "Contraseña incorrecta." };
-  }
-  return { ok: true };
+  return { ok: false, status: 401, error: "No autenticado." };
 }
 
 export async function POST(request: NextRequest) {
@@ -51,9 +58,9 @@ export async function POST(request: NextRequest) {
   if (isRateLimited(ip)) {
     return Response.json({ error: "Demasiadas solicitudes. Esperá un minuto." }, { status: 429 });
   }
-  const guard = checkPassword(request);
-  if (!guard.ok) {
-    return Response.json({ error: guard.error }, { status: guard.status });
+  const auth = await checkAuth(request);
+  if (!auth.ok) {
+    return Response.json({ error: auth.error }, { status: auth.status });
   }
 
   let body: GenerateBody;
@@ -81,6 +88,16 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Modelo inválido." }, { status: 400 });
   }
 
+  if (auth.uid !== "legacy" && body.model !== "pollinations-flux-free") {
+    try {
+      const { consumeCredits } = await import("@/lib/credits");
+      await consumeCredits(auth.uid, 1);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Sin créditos";
+      return Response.json({ error: msg }, { status: 402 });
+    }
+  }
+
   try {
     if (process.env.MOCK_GENERATE === "1") {
       return Response.json({ base64: MOCK_IMAGE_BASE64, mimeType: "image/png" });
@@ -106,6 +123,12 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ base64: result.base64, mimeType: result.mimeType });
   } catch (err) {
+    if (auth.uid !== "legacy" && body.model !== "pollinations-flux-free") {
+      try {
+        const { refundCredits } = await import("@/lib/credits");
+        await refundCredits(auth.uid, 1);
+      } catch {}
+    }
     const message = err instanceof Error ? err.message : "Error generando la imagen.";
     return Response.json({ error: message }, { status: 500 });
   }

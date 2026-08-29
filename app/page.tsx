@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import JSZip from "jszip";
 import {
   VIEWS,
@@ -40,8 +40,6 @@ import {
   Wand2,
   User,
   Ruler,
-  Lock,
-  ArrowRight,
   Package,
   Crosshair,
   Store,
@@ -53,13 +51,12 @@ import {
   Copy,
   CopyCheck,
 } from "lucide-react";
-
-const PASSWORD_KEY = "marketplace-generator-password";
+import { useAuth, doLogout } from "./components/AuthProvider";
+import { LoginGate } from "./components/LoginGate";
+import { CreditsBadge } from "./components/CreditsBadge";
 
 export default function Home() {
-  const [unlocked, setUnlocked] = useState(false);
-  const [password, setPassword] = useState("");
-  const [authError, setAuthError] = useState<string | null>(null);
+  const { user, loading } = useAuth();
 
   const [photo, setPhoto] = useState<CompressedImage | null>(null);
   const [name, setName] = useState("");
@@ -119,35 +116,6 @@ export default function Home() {
     }
   };
 
-  const passwordRef = useRef(password);
-  passwordRef.current = password;
-
-  useEffect(() => {
-    const stored = sessionStorage.getItem(PASSWORD_KEY);
-    if (!stored) return;
-    setPassword(stored);
-    fetch("/api/check", { headers: { "x-app-password": stored } })
-      .then((res) => {
-        if (res.ok) setUnlocked(true);
-      })
-      .catch(() => {});
-  }, []);
-
-  const unlock = async () => {
-    setAuthError(null);
-    try {
-      const res = await fetch("/api/check", { headers: { "x-app-password": password.trim() } });
-      if (res.ok) {
-        sessionStorage.setItem(PASSWORD_KEY, password.trim());
-        setUnlocked(true);
-      } else {
-        setAuthError("Contraseña incorrecta.");
-      }
-    } catch {
-      setAuthError("No se pudo conectar con el servidor.");
-    }
-  };
-
   const onPhotoChange = async (file: File | undefined | null) => {
     if (!file) {
       setPhoto(null);
@@ -180,24 +148,19 @@ export default function Home() {
   const toggleView = (key: ViewKey) => setSelectedViews((prev) => ({ ...prev, [key]: !prev[key] }));
   const toggleLogoOnView = (key: ViewKey) => setLogoEnabled((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const handleLogout = () => {
-    sessionStorage.removeItem(PASSWORD_KEY);
-    setPassword("");
-    setUnlocked(false);
-  };
-
   const generateView = useCallback(
     async (view: ViewInfo) => {
-      if (!photo) return;
+      if (!photo || !user) return;
       const shouldIncludeLogo = logoEnabled[view.key] && !!logo;
       const useAiLogo = shouldIncludeLogo && logoMode === "ai";
       const useCanvasLogo = shouldIncludeLogo && logoMode === "canvas";
 
       setCards((prev) => ({ ...prev, [view.key]: { state: "generating" } }));
       try {
+        const token = await user.getIdToken();
         const res = await fetch("/api/generate", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-app-password": passwordRef.current },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
             view: view.key,
             name,
@@ -214,9 +177,13 @@ export default function Home() {
           }),
         });
         if (res.status === 401) {
-          setCards((prev) => ({ ...prev, [view.key]: { state: "error", error: "Sesión expirada, volvé a ingresar la contraseña." } }));
-          sessionStorage.removeItem(PASSWORD_KEY);
-          setUnlocked(false);
+          setCards((prev) => ({ ...prev, [view.key]: { state: "error", error: "Sesión expirada, inicia sesión de nuevo." } }));
+          return;
+        }
+        if (res.status === 402) {
+          const d = await res.json().catch(() => ({} as { error?: string }));
+          setCards((prev) => ({ ...prev, [view.key]: { state: "error", error: d.error || "Sin créditos suficientes." } }));
+          setGlobalError("Sin créditos suficientes. Recarga tu plan.");
           return;
         }
         if (!res.ok) {
@@ -234,7 +201,7 @@ export default function Home() {
         setCards((prev) => ({ ...prev, [view.key]: { state: "error", error: err instanceof Error ? err.message : "Error generando la imagen." } }));
       }
     },
-    [photo, logo, logoEnabled, logoMode, logoPosition, name, size, aspectRatio, model, backgroundStyle, customInstructions],
+    [photo, logo, logoEnabled, logoMode, logoPosition, name, size, aspectRatio, model, backgroundStyle, customInstructions, user],
   );
 
   const runPool = useCallback(async (items: ViewInfo[], limit: number, worker: (item: ViewInfo) => Promise<void>) => {
@@ -330,33 +297,14 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
-  if (!unlocked) {
+  if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#07090f] p-4">
-        <div className="glass-panel w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-white/10">
-          <div className="mb-6 flex flex-col items-center gap-3 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/30 border border-indigo-400/30">
-              <Box className="h-7 w-7" />
-            </div>
-            <div>
-              <span className="font-mono-tech text-[10px] font-bold uppercase tracking-widest text-indigo-400">SLICER STUDIO 3D</span>
-              <h1 className="text-xl font-extrabold text-white mt-0.5">Acceso a la Consola</h1>
-              <p className="mt-1 text-xs text-zinc-400">Ingresa la clave de acceso del estudio</p>
-            </div>
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-500" />
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && unlock()} placeholder="••••••••" autoFocus className="w-full rounded-xl border border-white/10 bg-[#0b0f19] pl-10 pr-4 py-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition text-center font-mono-tech" />
-          </div>
-          {authError && <p className="mt-2 text-center text-xs font-semibold text-red-400">{authError}</p>}
-          <button onClick={unlock} className="btn-glow-indigo mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white cursor-pointer">
-            <span>Iniciar Consola</span>
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
+      <main className="flex min-h-screen items-center justify-center bg-[#07090f]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
       </main>
     );
   }
+  if (!user) return <LoginGate />;
 
   const activeCount = VIEWS.filter((v) => selectedViews[v.key]).length;
   const unitCost = MODEL_OPTIONS.find((m) => m.value === model)?.costPerImage ?? 0.067;
@@ -386,15 +334,17 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2.5">
+            <CreditsBadge />
             <div className="hidden md:flex items-center gap-2 font-mono-tech text-xs bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-zinc-300">
               <Cpu className="h-3.5 w-3.5 text-indigo-400" />
               <span>Layer: 0.12mm Fine</span>
             </div>
+            <span className="hidden sm:block text-xs text-zinc-400 max-w-[150px] truncate">{user.email}</span>
             <button onClick={() => setHistoryOpen(true)} className="flex items-center gap-2 rounded-xl bg-white/5 px-4 py-2 text-xs font-semibold text-zinc-200 border border-white/10 transition hover:bg-white/10 hover:border-white/20 cursor-pointer">
               <History className="h-4 w-4 text-indigo-400" />
               <span>Historial</span>
             </button>
-            <button onClick={handleLogout} className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-medium text-zinc-400 border border-white/5 transition hover:text-white hover:bg-white/5 cursor-pointer">
+            <button onClick={() => doLogout()} className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-medium text-zinc-400 border border-white/5 transition hover:text-white hover:bg-white/5 cursor-pointer">
               <LogOut className="h-4 w-4" />
               <span>Salir</span>
             </button>
