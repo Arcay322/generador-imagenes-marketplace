@@ -56,7 +56,8 @@ export async function generateImage(
       const images: string[] = [];
       if (params.photoBase64) images.push(`data:${params.photoMime};base64,${params.photoBase64}`);
       if (params.logoBase64) images.push(`data:${params.logoMime ?? "image/png"};base64,${params.logoBase64}`);
-      const body: Record<string, unknown> = { model: openRouterModel, prompt: params.prompt, n: 1, size };
+      const musePrompt = `CRITICAL FIDELITY INSTRUCTION: Keep the EXACT same figure from the reference image. DO NOT change design, colors, proportions, pose, clothing, hair, or sculpted details. Preserve every detail pixel-perfect. Only change the background and studio lighting as described. Reference image is the ground truth - copy it exactly. Original prompt: ${params.prompt}`;
+      const body: Record<string, unknown> = { model: openRouterModel, prompt: musePrompt, n: 1, size };
       if (images.length) (body as Record<string, unknown>).images = images;
       const res = await fetch("https://openrouter.ai/api/v1/images/generations", {
         method: "POST",
