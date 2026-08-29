@@ -46,6 +46,7 @@ export const VIEWS: ViewInfo[] = [
 export const MODELS = {
   free: "pollinations-flux-free",
   muse: "openrouter/meta/muse-image",
+  krea: "openrouter/krea/krea-2-medium-turbo",
   gpt5mini: "openrouter/openai/gpt-5-image-mini",
   gpt5: "openrouter/openai/gpt-5-image",
   gpt54: "openrouter/openai/gpt-5.4-image-2",
@@ -72,6 +73,12 @@ export const MODEL_OPTIONS: { value: ModelKey; label: string; description: strin
     label: "Meta Muse Image $0.01",
     description: "Meta agentic, pierde fidelidad en producto.",
     costPerImage: 0.01,
+  },
+  {
+    value: "krea",
+    label: "Krea 2 Medium Turbo $0.015",
+    description: "Krea rápido, diseño gráfico, 1 ref imagen.",
+    costPerImage: 0.015,
   },
   {
     value: "gpt5mini",
