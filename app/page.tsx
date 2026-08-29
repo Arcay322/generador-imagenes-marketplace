@@ -63,7 +63,7 @@ export default function Home() {
   const [size, setSize] = useState("27 cm");
   const [logo, setLogo] = useState<CompressedImage | null>(null);
 
-  const [model, setModel] = useState<ModelKey>("flash");
+  const [model, setModel] = useState<ModelKey>("muse");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
   const [backgroundStyle, setBackgroundStyle] = useState<BackgroundStyleKey>("estudio");
   const [customInstructions, setCustomInstructions] = useState("");

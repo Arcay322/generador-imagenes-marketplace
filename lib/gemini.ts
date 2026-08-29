@@ -46,6 +46,42 @@ export async function generateImage(
     return { base64, mimeType: "image/jpeg" };
   }
 
+  if (params.model === "openrouter/muse-image") {
+    const key = process.env.OPENROUTER_API_KEY;
+    if (!key) throw new Error("Falta OPENROUTER_API_KEY en el servidor.");
+    const content: Array<Record<string, unknown>> = [{ type: "text", text: params.prompt }];
+    if (params.photoBase64) {
+      content.push({ type: "image_url", image_url: { url: `data:${params.photoMime};base64,${params.photoBase64}` } });
+    }
+    if (params.logoBase64) {
+      content.push({ type: "image_url", image_url: { url: `data:${params.logoMime ?? "image/png"};base64,${params.logoBase64}` } });
+    }
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://fotovende.vercel.app",
+        "X-Title": "FotoVende",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        modalities: ["image", "text"],
+        messages: [{ role: "user", content }],
+      }),
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`OpenRouter Muse error ${res.status}: ${txt.slice(0, 300)}`);
+    }
+    const json = await res.json() as { choices?: Array<{ message?: { images?: Array<{ image_url?: { url?: string } }>; content?: string } }> };
+    const imgUrl = json.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!imgUrl) throw new Error("Muse no devolvió imagen. Respuesta: " + JSON.stringify(json).slice(0, 500));
+    const base64 = imgUrl.includes("base64,") ? imgUrl.split("base64,")[1] : imgUrl;
+    const mimeType = imgUrl.includes("data:") ? imgUrl.split(";")[0].split(":")[1] : "image/png";
+    return { base64, mimeType };
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("Falta GEMINI_API_KEY en el entorno del servidor.");

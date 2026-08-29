@@ -45,6 +45,7 @@ export const VIEWS: ViewInfo[] = [
 
 export const MODELS = {
   free: "pollinations-flux-free",
+  muse: "openrouter/muse-image",
   lite: "gemini-3.1-flash-lite-image",
   flash: "gemini-3.1-flash-image",
   pro: "gemini-3-pro-image",
@@ -58,6 +59,12 @@ export const MODEL_OPTIONS: { value: ModelKey; label: string; description: strin
     label: "Modo GRATIS 🎁 (Pollinations / Flux)",
     description: "100% Gratuito (US$0.00). Generación ilimitada sin costo de API.",
     costPerImage: 0.0,
+  },
+  {
+    value: "muse",
+    label: "Muse Image ⭐ $0.01 (OpenRouter)",
+    description: "Más barato que Gemini, calidad pro (~US$0.01/imagen). Recomendado.",
+    costPerImage: 0.01,
   },
   {
     value: "lite",
