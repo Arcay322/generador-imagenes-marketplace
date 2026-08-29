@@ -15,9 +15,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "3D Slicer Studio Pro · Marketplace Generator",
+  title: "FotoVende — Fotos de producto que venden solas",
   description:
-    "Consola de renderizado de imágenes de venta para figuras 3D con IA de Gemini: Portada, Detalle, Escala y Grid.",
+    "Genera fotos de producto profesionales para Mercado Libre, Amazon y Etsy con IA. Portada, detalle, escala y grid con tu logo. Multi-nicho y multi-idioma.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

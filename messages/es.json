@@ -1,0 +1,41 @@
+{
+  "brand": "FotoVende",
+  "tagline": "Fotos de producto que venden solas",
+  "login": {
+    "title": "Acceso a la Consola",
+    "subtitle": "Ingresa la clave de acceso del estudio",
+    "cta": "Iniciar Consola"
+  },
+  "header": {
+    "title": "Generador de Imágenes para Marketplace",
+    "ready": "215°C / 60°C READY",
+    "layer": "Layer: 0.12mm Fine",
+    "history": "Historial",
+    "logout": "Salir"
+  },
+  "presets": "Presets Marketplace:",
+  "copyPrompts": "Copiar Prompts (Gemini Web Gratis 🎁)",
+  "copied": "¡Prompts Copiados!",
+  "upload": {
+    "figure": "1. Captura del Producto",
+    "logo": "2. Logo de la marca (opcional)",
+    "drag": "Arrastra o haz clic",
+    "figureSub": "JPG, PNG o WEBP (máx. 1536px)",
+    "logoSub": "PNG transparente recomendado (máx. 512px)"
+  },
+  "fields": {
+    "name": "Nombre del producto",
+    "namePh": "Ej: Goku Super Saiyan 4 / Sneakers Air Max",
+    "size": "Calibrador Digital de Tamaño",
+    "background": "Muestra de Filamento / Fondo de Estudio",
+    "model": "Modelo IA",
+    "ratio": "Formato (Ratio)",
+    "instructions": "Instrucciones adicionales para la IA",
+    "instructionsPh": "Ej: luz cálida de estudio, resaltar detalles"
+  },
+  "generate": "Renderizar Catálogo 3D",
+  "generating": "Generando",
+  "downloadZip": "Descargar ZIP",
+  "credits": "créditos",
+  "estimatedCost": "Costo estimado"
+}

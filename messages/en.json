@@ -1,0 +1,41 @@
+{
+  "brand": "FotoVende",
+  "tagline": "Product photos that sell themselves",
+  "login": {
+    "title": "Console Access",
+    "subtitle": "Enter your studio access key",
+    "cta": "Launch Console"
+  },
+  "header": {
+    "title": "Marketplace Image Generator",
+    "ready": "215°C / 60°C READY",
+    "layer": "Layer: 0.12mm Fine",
+    "history": "History",
+    "logout": "Logout"
+  },
+  "presets": "Marketplace Presets:",
+  "copyPrompts": "Copy Prompts (Free Gemini Web 🎁)",
+  "copied": "Prompts Copied!",
+  "upload": {
+    "figure": "1. Product Capture",
+    "logo": "2. Brand Logo (optional)",
+    "drag": "Drag or click",
+    "figureSub": "JPG, PNG or WEBP (max 1536px)",
+    "logoSub": "Transparent PNG recommended (max 512px)"
+  },
+  "fields": {
+    "name": "Product name",
+    "namePh": "E.g. Goku Super Saiyan 4 / Air Max Sneakers",
+    "size": "Digital Size Caliper",
+    "background": "Filament Sample / Studio Background",
+    "model": "AI Model",
+    "ratio": "Aspect Ratio",
+    "instructions": "Additional AI instructions",
+    "instructionsPh": "E.g. warm studio light, highlight details"
+  },
+  "generate": "Render 3D Catalog",
+  "generating": "Generating",
+  "downloadZip": "Download ZIP",
+  "credits": "credits",
+  "estimatedCost": "Estimated cost"
+}
