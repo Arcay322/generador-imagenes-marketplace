@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+}
+
+:root {
+  --background: #07090f;
+  --foreground: #f4f4f5;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+.font-mono-tech {
+  font-family: var(--font-mono);
+}
+
+/* 3D Print Bed Magnetic Grid (PEI Grid Plate Feel) */
+.build-plate-grid {
+  background-color: #0b0f19;
+  background-image: 
+    linear-gradient(to right, rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+}
+
+/* Digital Caliper LCD Screen */
+.lcd-caliper-screen {
+  background: #06170d;
+  border: 1px solid #10b981;
+  box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  font-family: var(--font-mono);
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+}
+
+/* Glassmorphism & Custom Studio Elements */
+.glass-panel {
+  background: rgba(13, 18, 30, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-card-active {
+  background: rgba(24, 33, 54, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.2);
+}
+
+.btn-glow-indigo {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-glow-indigo:hover:not(:disabled) {
+  box-shadow: 0 0 35px rgba(99, 102, 241, 0.7);
+  transform: translateY(-1px);
+}
+
+.checkerboard-bg {
+  background-color: #101522;
+  background-image: linear-gradient(45deg, #182033 25%, transparent 25%),
+    linear-gradient(-45deg, #182033 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #182033 75%),
+    linear-gradient(-45deg, transparent 75%, #182033 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #07090f;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2638;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #33405c;
+}
+
+
