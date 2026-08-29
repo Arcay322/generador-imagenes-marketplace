@@ -50,14 +50,48 @@ export async function generateImage(
     const key = process.env.OPENROUTER_API_KEY;
     if (!key) throw new Error("Falta OPENROUTER_API_KEY en el servidor.");
     const openRouterModel = params.model.replace("openrouter/", "");
-    const dims = ASPECT_DIMS[params.aspectRatio] ?? ASPECT_DIMS["1:1"];
-    const size = `${dims.w}x${dims.h}`;
-    const images: string[] = [];
-    if (params.photoBase64) images.push(`data:${params.photoMime};base64,${params.photoBase64}`);
-    if (params.logoBase64) images.push(`data:${params.logoMime ?? "image/png"};base64,${params.logoBase64}`);
-    const body: Record<string, unknown> = { model: openRouterModel, prompt: params.prompt, n: 1, size };
-    if (images.length) (body as Record<string, unknown>).images = images;
-    const res = await fetch("https://openrouter.ai/api/v1/images/generations", {
+    if (openRouterModel === "meta/muse-image") {
+      const dims = ASPECT_DIMS[params.aspectRatio] ?? ASPECT_DIMS["1:1"];
+      const size = `${dims.w}x${dims.h}`;
+      const images: string[] = [];
+      if (params.photoBase64) images.push(`data:${params.photoMime};base64,${params.photoBase64}`);
+      if (params.logoBase64) images.push(`data:${params.logoMime ?? "image/png"};base64,${params.logoBase64}`);
+      const body: Record<string, unknown> = { model: openRouterModel, prompt: params.prompt, n: 1, size };
+      if (images.length) (body as Record<string, unknown>).images = images;
+      const res = await fetch("https://openrouter.ai/api/v1/images/generations", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://fotovende.vercel.app",
+          "X-Title": "FotoVende",
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(`OpenRouter ${openRouterModel} error ${res.status}: ${txt.slice(0, 400)}`);
+      }
+      const json = await res.json() as { data?: Array<{ b64_json?: string; url?: string }> };
+      const item = json.data?.[0];
+      if (!item) throw new Error(`${openRouterModel} no devolvió imagen. Respuesta: ` + JSON.stringify(json).slice(0, 600));
+      if (item.b64_json) return { base64: item.b64_json, mimeType: "image/png" };
+      if (item.url) {
+        if (item.url.startsWith("data:")) {
+          const base64 = item.url.split("base64,")[1];
+          const mimeType = item.url.split(";")[0].split(":")[1];
+          return { base64, mimeType };
+        }
+        const imgRes = await fetch(item.url);
+        const buf = await imgRes.arrayBuffer();
+        return { base64: Buffer.from(buf).toString("base64"), mimeType: "image/png" };
+      }
+      throw new Error(`${openRouterModel} respuesta sin imagen: ` + JSON.stringify(json).slice(0, 600));
+    }
+    const content: Array<Record<string, unknown>> = [{ type: "text", text: params.prompt }];
+    if (params.photoBase64) content.push({ type: "image_url", image_url: { url: `data:${params.photoMime};base64,${params.photoBase64}` } });
+    if (params.logoBase64) content.push({ type: "image_url", image_url: { url: `data:${params.logoMime ?? "image/png"};base64,${params.logoBase64}` } });
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${key}`,
@@ -65,27 +99,18 @@ export async function generateImage(
         "HTTP-Referer": "https://fotovende.vercel.app",
         "X-Title": "FotoVende",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ model: openRouterModel, modalities: ["image", "text"], messages: [{ role: "user", content }] }),
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
       throw new Error(`OpenRouter ${openRouterModel} error ${res.status}: ${txt.slice(0, 400)}`);
     }
-    const json = await res.json() as { data?: Array<{ b64_json?: string; url?: string }> };
-    const item = json.data?.[0];
-    if (!item) throw new Error(`${openRouterModel} no devolvió imagen. Respuesta: ` + JSON.stringify(json).slice(0, 600));
-    if (item.b64_json) return { base64: item.b64_json, mimeType: "image/png" };
-    if (item.url) {
-      if (item.url.startsWith("data:")) {
-        const base64 = item.url.split("base64,")[1];
-        const mimeType = item.url.split(";")[0].split(":")[1];
-        return { base64, mimeType };
-      }
-      const imgRes = await fetch(item.url);
-      const buf = await imgRes.arrayBuffer();
-      return { base64: Buffer.from(buf).toString("base64"), mimeType: "image/png" };
-    }
-    throw new Error(`${openRouterModel} respuesta sin imagen: ` + JSON.stringify(json).slice(0, 600));
+    const json = await res.json() as { choices?: Array<{ message?: { images?: Array<{ image_url?: { url?: string } }>; content?: string } }> };
+    const imgUrl = json.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!imgUrl) throw new Error(`${openRouterModel} no devolvió imagen. Respuesta: ` + JSON.stringify(json).slice(0, 600));
+    const base64 = imgUrl.includes("base64,") ? imgUrl.split("base64,")[1] : imgUrl;
+    const mimeType = imgUrl.includes("data:") ? imgUrl.split(";")[0].split(":")[1] : "image/png";
+    return { base64, mimeType };
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
