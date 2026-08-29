@@ -66,7 +66,7 @@ export async function generateImage(
       },
       body: JSON.stringify({
         model: "meta/muse-image",
-        modalities: ["image", "text"],
+        modalities: ["image"],
         messages: [{ role: "user", content }],
       }),
     });
