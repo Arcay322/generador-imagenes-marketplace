@@ -46,15 +46,16 @@ export async function generateImage(
     return { base64, mimeType: "image/jpeg" };
   }
 
-  if (params.model === "openrouter/muse-image") {
+  if (params.model.startsWith("openrouter/")) {
     const key = process.env.OPENROUTER_API_KEY;
     if (!key) throw new Error("Falta OPENROUTER_API_KEY en el servidor.");
+    const openRouterModel = params.model.replace("openrouter/", "");
     const dims = ASPECT_DIMS[params.aspectRatio] ?? ASPECT_DIMS["1:1"];
     const size = `${dims.w}x${dims.h}`;
     const images: string[] = [];
     if (params.photoBase64) images.push(`data:${params.photoMime};base64,${params.photoBase64}`);
     if (params.logoBase64) images.push(`data:${params.logoMime ?? "image/png"};base64,${params.logoBase64}`);
-    const body: Record<string, unknown> = { model: "meta/muse-image", prompt: params.prompt, n: 1, size };
+    const body: Record<string, unknown> = { model: openRouterModel, prompt: params.prompt, n: 1, size };
     if (images.length) (body as Record<string, unknown>).images = images;
     const res = await fetch("https://openrouter.ai/api/v1/images/generations", {
       method: "POST",
@@ -68,11 +69,11 @@ export async function generateImage(
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
-      throw new Error(`OpenRouter Muse error ${res.status}: ${txt.slice(0, 400)}`);
+      throw new Error(`OpenRouter ${openRouterModel} error ${res.status}: ${txt.slice(0, 400)}`);
     }
     const json = await res.json() as { data?: Array<{ b64_json?: string; url?: string }> };
     const item = json.data?.[0];
-    if (!item) throw new Error("Muse no devolvió imagen. Respuesta: " + JSON.stringify(json).slice(0, 600));
+    if (!item) throw new Error(`${openRouterModel} no devolvió imagen. Respuesta: ` + JSON.stringify(json).slice(0, 600));
     if (item.b64_json) return { base64: item.b64_json, mimeType: "image/png" };
     if (item.url) {
       if (item.url.startsWith("data:")) {
@@ -84,7 +85,7 @@ export async function generateImage(
       const buf = await imgRes.arrayBuffer();
       return { base64: Buffer.from(buf).toString("base64"), mimeType: "image/png" };
     }
-    throw new Error("Muse respuesta sin imagen: " + JSON.stringify(json).slice(0, 600));
+    throw new Error(`${openRouterModel} respuesta sin imagen: ` + JSON.stringify(json).slice(0, 600));
   }
 
   const apiKey = process.env.GEMINI_API_KEY;

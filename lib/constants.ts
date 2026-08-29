@@ -46,6 +46,7 @@ export const VIEWS: ViewInfo[] = [
 export const MODELS = {
   free: "pollinations-flux-free",
   muse: "openrouter/muse-image",
+  gpt5mini: "openrouter/gpt-5-image-mini",
   lite: "gemini-3.1-flash-lite-image",
   flash: "gemini-3.1-flash-image",
   pro: "gemini-3-pro-image",
@@ -62,8 +63,14 @@ export const MODEL_OPTIONS: { value: ModelKey; label: string; description: strin
   },
   {
     value: "muse",
-    label: "Meta Muse Image ⭐ $0.01 (OpenRouter)",
-    description: "Meta agentic, razonamiento antes de renderizar (~US$0.01/imagen). Recomendado.",
+    label: "Meta Muse Image $0.01 (OpenRouter)",
+    description: "Meta agentic, pierde fidelidad en producto.",
+    costPerImage: 0.01,
+  },
+  {
+    value: "gpt5mini",
+    label: "GPT-5 Image Mini ⭐ $0.01 (OpenRouter)",
+    description: "OpenAI, alta fidelidad barata (~US$0.01/imagen). Recomendado.",
     costPerImage: 0.01,
   },
   {
